@@ -8,7 +8,7 @@ import (
     "google.golang.org/grpc"
     "google.golang.org/grpc/credentials/insecure"
 
-    pb "github.com/Memetbadut/order-service/proto/product"
+    pb "github.com/MemetBadut/order-service/proto/product"
 )
 
 // ProductClient adalah wrapper untuk gRPC client ke Product Service
