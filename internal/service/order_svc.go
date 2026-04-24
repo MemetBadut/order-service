@@ -40,16 +40,26 @@ func (s *orderService) GetOrderByID(id uint) (*model.Order, error) {
 func (s *orderService) CreateOrder(req *model.CreateOrderRequest) (*model.Order, error) {
 	// 1. Cek stok via gRPC
 	available, msg, err := s.productClient.CheckStock(uint64(req.ProductID), int32(req.Quantity))
-	if err != nil || !available {
-		if err == nil {
-			err = errors.New(msg)
+	if err != nil {
+		if grpcclient.IsServiceUnavailable(err) {
+			return nil, err
 		}
+
+		return nil, errors.New("gagal validasi stok produk")
+	}
+
+	if !available {
+		err = errors.New(msg)
 		return nil, err
 	}
 
 	// 2. Ambil harga produk
 	productDetail, err := s.productClient.GetProduct(uint64(req.ProductID))
 	if err != nil {
+		if grpcclient.IsServiceUnavailable(err) {
+			return nil, err
+		}
+
 		return nil, errors.New("gagal ambil detail produk")
 	}
 	// 3. Buat order

@@ -3,11 +3,11 @@ package handler
 import (
 	"strconv"
 
-	"github.com/gofiber/fiber/v3"
+	grpcclient "github.com/MemetBadut/order-service/internal/grpc"
 	"github.com/MemetBadut/order-service/internal/model"
 	"github.com/MemetBadut/order-service/internal/service"
+	"github.com/gofiber/fiber/v3"
 )
-
 
 type OrderHandler struct {
 	svc service.OrderService
@@ -48,6 +48,10 @@ func (h *OrderHandler) Create(c fiber.Ctx) error {
 	}
 	order, err := h.svc.CreateOrder(&req)
 	if err != nil {
+		if grpcclient.IsServiceUnavailable(err) {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"error": err.Error()})
+		}
+
 		return c.Status(400).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.Status(201).JSON(fiber.Map{"data": order, "message": "order berhasil dibuat"})
